@@ -1,0 +1,11 @@
+﻿  WaterMarkUtils.cpp
+z:\workspace\vsworkspace\watermarkproject\watermarkproject\watermarkutils.cpp(2): fatal error C1083: 无法打开预编译头文件: “Debug\waterMarkProject.pch”: No such file or directory
+  extractWaterMark.cpp
+z:\workspace\vsworkspace\watermarkproject\watermarkproject\extractwatermark.cpp(2): fatal error C1083: 无法打开预编译头文件: “Debug\waterMarkProject.pch”: No such file or directory
+  Utils.cpp
+z:\workspace\vsworkspace\watermarkproject\watermarkproject\utils.cpp(4): fatal error C1083: 无法打开预编译头文件: “Debug\waterMarkProject.pch”: No such file or directory
+  gauss.cpp
+z:\workspace\vsworkspace\watermarkproject\watermarkproject\gauss.cpp(4): fatal error C1083: 无法打开预编译头文件: “Debug\waterMarkProject.pch”: No such file or directory
+  embedWaterMark.cpp
+z:\workspace\vsworkspace\watermarkproject\watermarkproject\embedwatermark.cpp(5): fatal error C1083: 无法打开预编译头文件: “Debug\waterMarkProject.pch”: No such file or directory
+  正在生成代码...
