@@ -36,9 +36,17 @@ void embedWaterMark::embedWaterMrak() {
 	ColSt = MarginV + 1;
 	ColEd = m - MarginV;
 	Mat stg = cfData;
-	for (int j = 1; j <= t;j++) {
-		
+	for (int j = 0; j < t;j++) {
+		Mat tempCfdata = uitls.getMatV(stg,RowSt,RowEd,ColSt,ColEd);
+		Mat dstStg = giQimHide_DCT_block_vertical_Glp(tempCfdata,ones,delta,vlen,p,block);
+		for (int row = 0 ; row <= RowEd-RowSt ; row++) {
+			for (int col = 0; col <= ColEd-ColSt ; col++) {
+				stg.at<Vec3b>(row+RowSt, col+ColSt)[j] = dstStg.at<uchar>(row,col);
+			}
+		}
 	}
+	//把stg存储的图像写入文件中
+
 }
 Mat embedWaterMark::giQimHide_DCT_block_vertical_Glp(Mat cfData, vector<int> ones,
 	int delta,int vlen, double p, int block[2]) {
@@ -99,17 +107,74 @@ Mat embedWaterMark::giQimHide_DCT_block_vertical_Glp(Mat cfData, vector<int> one
 	v2 = uitls.Creshape(v2,vlen);
 	Mat z1 = Mat::zeros(1, N1, CV_8UC1);
 	Mat z = Mat::zeros(1, N1, CV_8UC1);
-	for (int i = 1; i <= N1;i++) {
+	for (int i = 0; i < N1;i++) {
 		Mat v1Col = uitls.getPowMat(v1,i,p);
 		Mat v2Col = uitls.getPowMat(v2,i,p);
 		double lx = uitls.getLxOrLy(v1Col,vlen,1/p);
 		double ly = uitls.getLxOrLy(v2Col,vlen,1/p);
 		if ((std::abs(lx)<=(1e-6))||(std::abs(ly)<=(1e-6)))
 		{		
-			
+			Mat v1_noise = uitls.cAwgn(v1,i,50);
+			Mat v2_noise = uitls.cAwgn(v2,i,50);
+			Mat temp_v1_noise = uitls.getPowMat(v1_noise,p);
+			Mat temp_v2_noise = uitls.getPowMat(v2_noise,p);
+			lx = uitls.getLxOrLy(temp_v1_noise,vlen,1/p);
+			ly = uitls.getLxOrLy(temp_v2_noise,vlen,1/p);
 		}
-		
+		z.at<uchar>(0, i) = lx / ly;
+		int d = wfData[i];
+		/*if isnan(z(i)) == 1 || isinf(z(i)) == 1 || (abs(lx) <= 1e-6) || (abs(ly) <= 1e-6)
+			fprintf(fid, 'HD!i=%d,lx = %f, ly = %f\n', i, lx, ly);
+		continue;
+		end*/
+		z1.at<uchar>(0, i) = waterMarkutils.quantificate(z.at<uchar>(0, i),d,delta);
+		if (z1.at<uchar>(0, i)==0)
+		{
+			z1.at<uchar>(0, i) = delta / 8;
+		}
+		if (z1.at<uchar>(0, i)<0)
+		{
+			z1.at<uchar>(0, i) = z1.at<uchar>(0, i) + delta;
+		}
+		double k = std::sqrt(z1.at<uchar>(0, i)/z.at<uchar>(0, i));
+		for (int j = 0; j < v1.rows;j++) {
+			v1.at<uchar>(j, i) = k*v1.at<uchar>(j, i);
+		} 
+		for (int j = 0; j < v2.rows;j++) {
+			v2.at<uchar>(j, i) = v2.at<uchar>(j, i) / k;
+		}
 	}
-	return;
+	int oddP = 0; 
+	int evenP = 0;
+	Mat v11 = uitls.Creshape(v1, M / 2);
+	Mat v22 = uitls.Creshape(v2, M / 2);
+	for (int i = 1; i <= M;i++) {
+		if (i%2==1) {
+			oddP = oddP + 1;
+			for (int j = 0; j < v.cols;j++) {
+				v.at<uchar>(i , j) = v11.at<uchar>(oddP,j);
+			}
+		}
+		else
+		{
+			evenP = evenP + 1;
+			for (int j = 0; j < v.cols; j++) {
+				v.at<uchar>(i , j) = v22.at<uchar>(evenP, j);
+			}
+		}
+		for (int j = 1; j <= N;j++) {
+			Mat srcV = uitls.getMatV(cfL, (i - 1)*block[0], i*block[0] - 1,
+				(j - 1)*block[1], j*block[1] - 1);
+			Mat V;
+			cvDCT(&srcV, &V, CV_DXT_FORWARD);
+			V.at<uchar>(2, 1) = v.at<uchar>(i, j);
+			Mat dct;
+			cvDCT(&V,&dct,CV_DXT_INVERSE);
+			srcV = dct;
+		}
+	}
+	Mat stg;
+	stg = cfL + cfH;
+	return stg;
 
 }

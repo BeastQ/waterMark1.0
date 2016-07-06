@@ -4,7 +4,6 @@
 #include <opencv2/highgui/highgui.hpp>  
 #include <iostream> 
 using namespace cv;
-#define TWO_PI 6.2831853071795864769252866 
 /*
 通用方法类的声明
 */
@@ -28,9 +27,10 @@ public:
 	Mat getMatV(Mat cfL,int r1,int r2,int c1,int c2);
 	Mat Creshape(Mat v,int rows);
 	Mat getPowMat(Mat v,int i,int p);
+	Mat getPowMat(Mat v,int p);
 	double getLxOrLy(Mat cc,int vlen,double p1);
 	//产生高斯噪声
-	double generateGaussianNoise();
+	double generateGaussianNoise(double Dx);
 	//加入高斯白噪声
 	Mat cAwgn(Mat v, int i, double db);
 private:

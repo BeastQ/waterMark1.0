@@ -23,7 +23,7 @@ public:
 	//minEucDistance
 	void minEucDistance();
 	//quantificate
-	void quantificate();
+	double quantificate(double z, int d, int delta);
 	void getWaterMarkRect(Mat img);
 private:
 	//声明一些需要的属性

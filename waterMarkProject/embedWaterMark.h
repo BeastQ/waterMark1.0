@@ -2,6 +2,7 @@
 #include <vector>;
 #include<opencv2/opencv.hpp>
 #include "Uitls.h";
+#include "WaterMarkUtils.h"
 using namespace cv;
 using namespace std;
 /*
@@ -34,6 +35,7 @@ private:
 	double RowSt, RowEd, ColSt, ColEd;
 	Mat cfData;
 	Uitls uitls;
+	WaterMarkUtils waterMarkutils;
 };
 
 

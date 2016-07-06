@@ -35,6 +35,11 @@ Mat Uitls::getPowMat(Mat c,int i,int p) {
 	cv::pow(v1SrcC,p,v1DstC);
 	return v1DstC;
 }
+Mat Uitls::getPowMat(Mat c,int p) {
+	Mat Dst;
+	cv::pow(c, p, Dst);
+	return Dst;
+}
 double Uitls::getLxOrLy(Mat cc,int vlen,double p1) {
 	double sum = 0;
 	for (int i = 0; i < cc.rows;i++) {
@@ -44,35 +49,40 @@ double Uitls::getLxOrLy(Mat cc,int vlen,double p1) {
 	double sum2 = sum1 / vlen;
 	return std::pow(sum2,p1);
 }
-//产生高斯噪声，，通过Box-Muller变换可以产生Gaussian噪音
-double generateGaussianNoise() {
-	static bool hasSpare = false;
-	static double rand1, rand2;
-	if (hasSpare)
-	{
-		hasSpare = false;
-		return sqrt(rand1) * sin(rand2);
+//产生高斯噪声，即期望为0，方差为Dx服从正太分布就得随机序列
+double generateGaussianNoise(double Dx) {
+	static double V1, V2, S;
+	static int phase = 0;
+	double X;
+	if (phase == 0) {
+		do {
+			double U1 = (double)rand() / RAND_MAX;
+			double U2 = (double)rand() / RAND_MAX;
+			V1 = 2 * U1 - 1;
+			V2 = 2 * U2 - 1;
+			S = V1 * V1 + V2 * V2;
+		} while (S >= 1 || S == 0);
+		X = V1 * sqrt(-2 * log(S) / S);
 	}
-	hasSpare = true;
-	rand1 = rand() / ((double)RAND_MAX);
-	if (rand1 < 1e-100) 
-		rand1 = 1e-100;
-	rand1 = -2 * log(rand1);
-	rand2 = (rand() / ((double)RAND_MAX)) * TWO_PI;
-	return sqrt(rand1) * cos(rand2);
+	else
+		X = V2 * sqrt(-2 * log(S) / S);
+	phase = 1 - phase;
+	return X*(std::sqrt(Dx));
 }
 //增加高斯噪声
 Mat Uitls::cAwgn(Mat v,int i,double db) {
 	Mat vv = getPowMat(v,i,2);
 	double Ssum = 0;//输入信号能量
-	double Nsum = 0;//噪声能量
 	for (int j = 0; j < vv.rows;j++) {
 		Ssum = Ssum + vv.at<uchar>(j, 0);
 	}
-	if (Ssum==Nsum*(std::pow(10,i))) {
-		//Mat v_noise = ;
+	double Dx = Ssum / (vv.rows*(std::pow(10,db/10)));//计算用于产生高斯噪声的方差
+	double gauss = generateGaussianNoise(Dx);//产生高斯白噪声序列
+	Mat vi = v.col(i).clone;
+	for (int j = 0; j < vi.rows;j++) {
+		vi.at<uchar>(j, 0) = vi.at<uchar>(j, 0) + gauss;
 	}
-	return;
+	return vi;
 }
 void Uitls::getBer() {
 }

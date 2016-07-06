@@ -27,7 +27,10 @@ void WaterMarkUtils::izigzagOrder() {
 void WaterMarkUtils::minEucDistance() {
 }
 
-void WaterMarkUtils::quantificate() {
+double WaterMarkUtils::quantificate(double z,int d,int delta) {
+	double dither = d*delta / 2;
+	double z1 = delta * round((z + dither) / delta) - dither;
+	return z1;
 }
 
 void WaterMarkUtils::zigzagOrder() {
